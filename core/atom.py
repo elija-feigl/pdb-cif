@@ -5,8 +5,8 @@ import attr
 import numpy as np
 from typing import Any
 
-from utils import number_2_hybrid36 as int_2_h36
-from utils import hybrid36_2_number as h36_2_int
+from core.utils import number_2_hybrid36 as int_2_h36
+from core.utils import hybrid36_2_number as h36_2_int
 
 
 @attr.s
@@ -17,7 +17,7 @@ class Number(object):
     def __attrs_post_init__(self):
         self.n: int = self._convert_input(self._input)
 
-    def _convert_input(self, inpt):
+    def _convert_input(self, inpt: Any):
         if isinstance(inpt, int):
             return inpt
         elif isinstance(inpt, str):
@@ -28,10 +28,13 @@ class Number(object):
         else:
             raise NotImplementedError
 
-    def as_h36(self, width):
+    def as_pdb4namd(self, width: int) -> str:
+        return self.as_h36(width=width)
+
+    def as_h36(self, width: int) -> str:
         return int_2_h36(number=self.n, width=width)
 
-    def as_str(self):
+    def as_str(self) -> str:
         return str(self.n)
 
 
@@ -48,22 +51,29 @@ class AtomName(object):
         ipt = ipt.strip()
         return self.NAMD[ipt] if ipt in self.NAMD.keys() else ipt
 
-    def as_pdb4namd(self):
-        """
-    Atom names start with element symbols right-justified in columns 13-14 as
-    permitted by the length of the name. For example, the symbol FE for iron
-    appears in columns 13-14, whereas the symbol C for carbon appears in column
-    14 (see Misaligned Atom Names). If an atom name has four characters,
-    however, it must start in column 13 even if the element symbol is a single
-    character (for example, see Hydrogen Atoms).
-        """
+    def element_name(self) -> str:
+        if len(self.name) == 1:
+            return self.name
+        else:
+            return ''.join(filter(str.isalpha, self.name[:2]))
+
+    def as_pdb4namd(self, width: int) -> str:
         opt = self.name
         DMNA = {v: k for k, v in iter(self.NAMD.items())}
         namePDB = DMNA[opt] if opt in DMNA.keys() else opt
-        # TODO check justification rules
-        return namePDB
+        if len(namePDB) == 1:
+            return namePDB.ljust(2, " ").rjust(width, " ")
+        elif len(namePDB) == 2:
+            return namePDB.ljust(1, " ").rjust(width, " ")
+        else:
+            return namePDB.rjust(width, " ")
 
-    def as_str(self):
+    def as_cif(self) -> str:
+        if "'" in self.name:
+            return "\"{}\"".format(self.name)
+        return self.name
+
+    def as_str(self) -> str:
         return self.name
 
 
@@ -80,12 +90,12 @@ class ResName(object):
         inpt = inpt.strip()
         return self.NAMD[inpt] if inpt in self.NAMD.keys() else inpt
 
-    def as_pdb4namd(self):
+    def as_pdb4namd(self, width: int) -> str:
         """returns resname [ADE, CYT, GUA, THY], len=3 """
         DMNA = {v: k for k, v in iter(self.NAMD.items())}
-        return DMNA[self.name]
+        return DMNA[self.name].rjust(width, " ")
 
-    def as_str(self):
+    def as_str(self) -> str:
         return self.name
 
 
@@ -100,16 +110,27 @@ class ChainID(object):
     def _convert_input(self, inpt: str) -> str:
         raise NotImplementedError
 
+    def as_pdb4namd(self, width: int) -> str:
+        raise NotImplementedError
+
+    def as_cif(self):
+        """1-2 letter all caps"""
+        raise NotImplementedError
+
+    def as_chimera(self):
+        """2 letter h36?"""
+        raise NotImplementedError
+
+    def as_segName4namd(self, width: int) -> str:
+        raise NotImplementedError
+
+    def as_str(self) -> str:
+        return str(self.n)
+
 
 @attr.s
 class Atom(object):
-    """
-1234567890123456789012345678901234567890123456789012345678901234567890123456789
-Atom  Asnum_Atna-Rna_IRsqn_   XxxxxxxxYyyyyyyyZzzzzzzzOoooooTttttt.     SegmElC
-#energMD
-ATOM     11  C5' ADE D   1     202.444 396.338 395.231  0.00  0.00      D001
-#2cif
-ATOM     11  C5'  DTAA   1     -95.447  -2.873 127.534  1.00  0.00      AA00 C
+    """ TODO: doc
     """
     atom_coor: np.Array = attr.ib()
     atom_number: Number = attr.ib()
@@ -117,9 +138,53 @@ ATOM     11  C5'  DTAA   1     -95.447  -2.873 127.534  1.00  0.00      AA00 C
     res_name: ResName = attr.ib()
     chain_id: ChainID = attr.ib()
     res_number: Number = attr.ib()
+    opaccity: float = attr.ib(default=0.0)
+    temperature: float = attr.ib(default=0.0)
+
+    def __attrs_post_init__(self):
+        self.element: str = self.atom_name.element_name()
 
     def asCif(self) -> str:
-        raise NotImplementedError
+        return "".join([
+            "ATOM ",
+            self.atom_number.as_str().ljust(12, " "),
+            self.element.ljust(2, " "),
+            self.atom_name.as_cif().ljust(6, " "),
+            ". ",
+            self.res_name.as_str().ljust(3, " "),
+            self.chain_id.as_cif().ljust(3, " "),
+            self.chain_id.as_str().ljust(4, " "),
+            self.res_number.as_str().ljust(6, " "),
+            "? ",
+            "{: .3f}".format(self.atom_coor[0]).rjust(8, " "),
+            "{: .3f}".format(self.atom_coor[1]).rjust(8, " "),
+            "{: .3f}".format(self.atom_coor[2]).rjust(8, " "),
+            "{: .2f}".format(self.opaccity).rjust(6, " "),
+            "{: .2f}".format(self.temperature).rjust(6, " "),
+            "? ",
+            self.res_number.as_str().ljust(6, " "),
+            self.res_name.as_str().ljust(3, " "),
+            self.chain_id.as_chimera().ljust(3, " "),
+            self.atom_name.as_cif().ljust(6, " "),
+            "1"
+        ])
 
     def asPdb(self) -> str:
-        raise NotImplementedError
+        return "".join([
+            "ATOM  ",
+            self.atom_number.as_pdb4namd(width=5),
+            self.atom_name.as_pdb4namd(width=5),
+            self.res_name.as_pdb4namd(width=4),
+            self.chain_id.as_pdb4namd(width=2),
+            self.res_number.as_pdb4namd(width=4),
+            (4 * " "),
+            "{: .3f}".format(self.atom_coor[0]).rjust(8, " "),
+            "{: .3f}".format(self.atom_coor[1]).rjust(8, " "),
+            "{: .3f}".format(self.atom_coor[2]).rjust(8, " "),
+            "{: .2f}".format(self.opaccity).rjust(6, " "),
+            "{: .2f}".format(self.temperature).rjust(6, " "),
+            (6 * " "),
+            self.chain_id.as_segName4namd(width=4),
+            self.element,
+            (2 * " "),  # charge
+        ])
