@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import string
+
 
 def h36_2_int(number: str) -> int:
     """ hybrid36 string format to integer"""
@@ -43,16 +45,21 @@ def int_2_h36(number: int, width: int) -> str:
     raise ValueError("value out of range.")
 
 
-POS_CHAR = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-POS_CHAIN_IDS = []
-for c1 in POS_CHAR:
-    for c2 in POS_CHAR:
-        POS_CHAIN_IDS.append(c1 + c2)
-
-
 def int_2_cifSegID(number: int) -> str:
-    return ""
+    upper = string.ascii_uppercase
+    n_upper = len(upper)
+    if number < n_upper:
+        return upper[number]
+    else:
+        n = number - n_upper
+        i = n // n_upper
+        j = n % n_upper
+        return (upper[i] + upper[j])
 
 
 def int_2_chimeraSegID(number: int) -> str:
-    return ""
+    char = string.ascii_uppercase + string.ascii_lowercase + string.digits
+    n_char = len(char)
+    i = number // n_char
+    j = number % n_char
+    return (char[i] + char[j])
