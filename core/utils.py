@@ -2,19 +2,16 @@
 # -*- coding: utf-8 -*-
 
 
-POS_CHAR = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-POS_CHAIN_IDS = []
-for c1 in POS_CHAR:
-    for c2 in POS_CHAR:
-        POS_CHAIN_IDS.append(c1 + c2)
-
-
-def hybrid36_2_number(number: str) -> int:
+def h36_2_int(number: str) -> int:
+    """ hybrid36 string format to integer"""
+    # TODO: -low- as cif has int and namd has to be recalculated fo enrgMD
+    # script. (server is h36)
     raise NotImplementedError
 
 
-def number_2_hybrid36(number: int, width: int) -> str:
-    """ authors:  Thomas Martin, Ana Casanal """
+def int_2_h36(number: int, width: int) -> str:
+    """ integer to hybrid36 string
+        authors:  Thomas Martin, Ana Casanal """
     digits_upper = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     digits_lower = digits_upper.lower()
 
@@ -44,3 +41,18 @@ def number_2_hybrid36(number: int, width: int) -> str:
             number += 10 * 36**(width - 1)
             return encode_pure(digits_lower, number)
     raise ValueError("value out of range.")
+
+
+POS_CHAR = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+POS_CHAIN_IDS = []
+for c1 in POS_CHAR:
+    for c2 in POS_CHAR:
+        POS_CHAIN_IDS.append(c1 + c2)
+
+
+def int_2_cifSegID(number: int) -> str:
+    return ""
+
+
+def int_2_chimeraSegID(number: int) -> str:
+    return ""

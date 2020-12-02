@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from core.utils import int_2_h36, h36_2_int, int_2_cifSegID, int_2_chimeraSegID
 import attr
 import numpy as np
 from typing import Any
-
-from core.utils import number_2_hybrid36 as int_2_h36
-from core.utils import hybrid36_2_number as h36_2_int
 
 
 @attr.s
@@ -101,28 +99,40 @@ class ResName(object):
 
 @attr.s
 class ChainID(object):
-    """ read from hybrid36 string string or int """
     _input: Any = attr.ib()
 
     def __attrs_post_init__(self):
         self.n: int = self._convert_input(self._input)
 
-    def _convert_input(self, inpt: str) -> str:
-        raise NotImplementedError
+    def _convert_input(self, inpt: Any):
+        if isinstance(inpt, int):
+            return inpt
+        elif isinstance(inpt, str):
+            if inpt.isdigit():
+                return int(inpt)
+            else:
+                # TODO: implement read from h36 or similar
+                # -low: as cif has int-id and namd has to be reset anyways
+                # reverse: int_2_cifSegID or int_2_chimSegID
+                return h36_2_int(inpt)
+        else:
+            raise NotImplementedError
 
     def as_pdb4namd(self, width: int) -> str:
-        raise NotImplementedError
+        nlast = int(str(self.n)[0])
+        n2char = "ABCDEFGHIJ"[nlast]
+        return n2char.rjust(width, " ")
 
     def as_cif(self):
         """1-2 letter all caps"""
-        raise NotImplementedError
+        raise int_2_cifSegID(self.n).rjust(2, " ")
 
     def as_chimera(self):
         """2 letter h36?"""
-        raise NotImplementedError
+        raise int_2_chimeraSegID(self.n)
 
     def as_segName4namd(self, width: int) -> str:
-        raise NotImplementedError
+        return "{:0{width}d}".format(self.n, width=width)
 
     def as_str(self) -> str:
         return str(self.n)
