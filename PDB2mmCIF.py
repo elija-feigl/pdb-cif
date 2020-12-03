@@ -11,14 +11,14 @@ from core.structure import Structure
 
 __authors__ = "[Elija Feigl]"
 __credits__ = "pdbCorrection.py: Thomas Martin, Ana Casanal, Elija Feigl"
-__version__ = "0.5"
+__version__ = "0.6"
 
 
 @attr.s(slots=True)
 class Args(object):
     input: Path = attr.ib()
     output: Path = attr.ib()
-    pdb2cif: bool = attr.ib()
+    remove_H: bool = attr.ib()
 
 
 def proc_input() -> Args:
@@ -26,22 +26,23 @@ def proc_input() -> Args:
         return "namd (enrgMD) PDB to chimera PDB."
 
     def add_arguments(p: argparse.ArgumentParser) -> None:
-        p.add_argument("--input",
+        p.add_argument("-i", "--input",
                        help="input file",
                        type=str,
                        required=True,
                        default=argparse.SUPPRESS,
                        )
-        p.add_argument("--output",
+        p.add_argument("-o", "--output",
                        help="output file",
                        type=str,
                        required=True,
                        default=argparse.SUPPRESS,
                        )
-        p.add_argument("--pdb2cif",
-                       help="prep for cif-generation (overrides others)",
+        p.add_argument("-h", "--hydrogen",
+                       help="remove hydrogen atoms?",
                        action="store_true"
                        )
+
     parser = argparse.ArgumentParser(
         description=get_description(),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
@@ -50,17 +51,17 @@ def proc_input() -> Args:
     parse = parser.parse_args()
     return Args(input=Path(parse.input),
                 output=Path(parse.output),
-                pdb2cif=parse.pdb2cif,
+                remove_H=parse.hydrogen,
                 )
 
 
 def main():
     args = proc_input()
 
-    structure = Structure(filename=args.input)
+    structure = Structure(filename=args.input, remove_H=args.remove_H)
     if structure.filename.suffix == ".pdb":
         structure.parse_pdb()
-        # TODO: -low- ask for additional info (name etc)
+        # TODO: -low- ask for additional info (name, author, etc)
         structure.write_cif(args.output)
     elif structure.filename.suffix == ".cif":
         structure.parse_pdb()
