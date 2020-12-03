@@ -38,9 +38,10 @@ def proc_input() -> Args:
                        required=True,
                        default=argparse.SUPPRESS,
                        )
-        p.add_argument("-h", "--hydrogen",
+        p.add_argument("-H", "--hydrogen",
                        help="remove hydrogen atoms?",
-                       action="store_true"
+                       action="store_true",
+                       default=True
                        )
 
     parser = argparse.ArgumentParser(

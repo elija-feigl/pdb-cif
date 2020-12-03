@@ -2,47 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import string
-
-
-def h36_2_int(number: str) -> int:
-    """ hybrid36 string format to integer"""
-    # TODO: -low- as cif has int and namd has to be recalculated fo enrgMD
-    # script. (server is h36)
-    raise NotImplementedError
-
-
-def int_2_h36(number: int, width: int) -> str:
-    """ integer to hybrid36 string
-        authors:  Thomas Martin, Ana Casanal """
-    digits_upper = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    digits_lower = digits_upper.lower()
-
-    def encode_pure(digits: str, value: int) -> str:
-        "encodes value using the given digits"
-        assert value >= 0
-        if (value == 0):
-            return digits[0]
-        n = len(digits)
-        result = []
-        while (value != 0):
-            rest = value // n
-            result.append(digits[value - rest * n])
-            value = rest
-        result.reverse()
-        return "".join(result)
-
-    if (number >= 1 - 10**(width - 1)):
-        if (number < 10**width):
-            return "{:{width}d}".format(number, width=width)
-        number -= 10**width
-        if (number < 26 * 36**(width - 1)):
-            number += 10 * 36**(width - 1)
-            return encode_pure(digits_upper, number)
-        number -= 26 * 36**(width - 1)
-        if (number < 26 * 36**(width - 1)):
-            number += 10 * 36**(width - 1)
-            return encode_pure(digits_lower, number)
-    raise ValueError("value out of range.")
+from typing import Dict
 
 
 def int_2_cifSegID(number: int) -> str:
@@ -63,3 +23,77 @@ def int_2_chimeraSegID(number: int) -> str:
     i = number // n_char
     j = number % n_char
     return (char[i] + char[j])
+
+
+# -----------------------------------------------------------------------------
+# hybrid36 conversion code
+# modified from: Ralf W. Grosse-Kunstleve,
+# Feb 2007. http://cci.lbl.gov/hybrid_36/
+
+
+digits_upper = string.digits + string.ascii_uppercase
+digits_lower = digits_upper.lower()
+digits_upper_values = dict([pair for pair in zip(digits_upper, range(36))])
+digits_lower_values = dict([pair for pair in zip(digits_lower, range(36))])
+
+
+def _decode(digits_values: Dict[str, int], string: str) -> int:
+    """ decodes string using digits_values associations for each character"""
+    result = 0
+    n = len(digits_values)
+    for c in string:
+        result *= n
+        result += digits_values[c]
+    return result
+
+
+def h36_2_int(string: str) -> int:
+    """ decodes hybrid36 string to integer"""
+    width = len(string)
+    n_baseDigits = 10 * 36 ** (width - 1)
+    n_baseChar = 26 * 36 ** (width - 1)
+    max_int = 10 ** width
+
+    if string.isdigit():
+        return int(string)
+    shift = max_int
+    if string[0] in digits_upper_values:
+        shift -= n_baseDigits
+        return _decode(digits_upper_values, string=string) + shift
+
+    elif string[0] in digits_lower_values:
+        shift += (n_baseChar - n_baseDigits)
+        return _decode(digits_lower_values, string=string) + shift
+    raise ValueError("invalid number literal.")
+
+
+def _encode(digits: str, value: int) -> str:
+    """ encodes value using the given digits"""
+    if (value == 0):
+        return digits[0]
+    n = len(digits)
+    result = []
+    while (value != 0):
+        rest = value // n
+        result.append(digits[value - rest * n])
+        value = rest
+    result.reverse()
+    return "".join(result)
+
+
+def int_2_h36(number: int, width: int) -> str:
+    """ integer to hybrid36 string with "width" digits"""
+    n_baseDigits = 10 * 36 ** (width - 1)
+    n_baseChar = 26 * 36 ** (width - 1)
+    max_int = 10 ** width
+
+    if (number < max_int):
+        return "{:{width}d}".format(number, width=width)
+    number -= max_int
+    if (number < n_baseChar):
+        return _encode(digits_upper, (number + n_baseDigits))
+    number -= n_baseChar
+    if (number < n_baseChar):
+        return _encode(digits_lower, (number + n_baseDigits))
+    else:
+        raise ValueError("value out of range.")
