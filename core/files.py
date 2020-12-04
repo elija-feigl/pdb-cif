@@ -1,11 +1,14 @@
 #!/usr/bin/env python3.8
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 
 
 import attr
 
 from pathlib import Path
-from typing import List, TextIO
+from typing import List, TextIO, TYPE_CHECKING
+if TYPE_CHECKING:
+    from core.structure import Structure
 try:
     import importlib.resources as resources
 except ImportError:
@@ -17,7 +20,7 @@ from core import cif_templates
 
 @attr.s
 class PDB(object):
-    struct: "Structure" = attr.ib()
+    struct: Structure = attr.ib()
 
     def __attrs_post_init__(self):
         # TODO: get box from struct
@@ -57,7 +60,7 @@ class PDB(object):
 
 @attr.s
 class CIF(object):
-    struct: "Structure" = attr.ib()
+    struct: Structure = attr.ib()
 
     def __attrs_post_init__(self):
         self.atoms: List[str] = self._set_atoms()
