@@ -15,9 +15,10 @@ class Structure(object):
     filename: Path = attr.ib()
     remove_H: bool = attr.ib(default=True)
     atoms: List[Atom] = list()
-    # TODO: default and slot other atributs: sequences etc
+    # TODO: default and other atributs: sequences etc
 
     def __attrs_post_init__(self):
+        self.name = self.filename.stem  # TODO pass name option
         self.keep_resID: bool = True
         self.previous_atm: Tuple[str, int] = ("", 0)
         self.previous_res: Tuple[str, int] = ("", 0)

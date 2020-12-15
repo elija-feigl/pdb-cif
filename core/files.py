@@ -70,14 +70,20 @@ class CIF(object):
         return [atom.asCif() for atom in self.struct.atoms]
 
     def _write_atoms(self, fo: TextIO) -> None:
-        atom_header = resources.read_text(cif_templates, 'atom_header.txt')
+        atom_header = resources.read_text(cif_templates, "atom_header.txt")
 
         fo.write(atom_header)
         fo.writelines(self.atoms)
+
+    def _write_header(self, fo: TextIO) -> None:
+        header = resources.read_text(cif_templates, "header.txt")
+        fo.write("data_{}\n".format(self.struct.name))
+        fo.write(header)
 
     def write(self, outfile: Path) -> None:
         close_section = "#\n"
 
         with open(outfile, mode="w+") as fo:
+            self._write_header(fo)
             self._write_atoms(fo)
             fo.write(close_section)
