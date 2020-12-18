@@ -98,6 +98,9 @@ class ResName(object):
     def as_str(self) -> str:
         return self.name
 
+    def as_X(self) -> str:
+        return self.name[-1]
+
 
 @attr.s
 class ChainID(object):
@@ -114,9 +117,6 @@ class ChainID(object):
             if inpt.isdigit():
                 return int(inpt)
             else:
-                # TODO: implement read from h36 or similar
-                # -low: as cif has int-id and namd has to be reset anyways
-                # reverse: int_2_cifSegID or int_2_chimSegID
                 return h36_2_int(inpt)
         else:
             raise NotImplementedError
