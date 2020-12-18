@@ -28,7 +28,8 @@ class Atom(object):
         self.res_name: ResName = ResName(self.i_res_name)
         self.chain_id: ChainID = ChainID(self.i_chain_id)
         self.res_number: Number = Number(self.i_res_number)
-        self.opaccity: float = float(self.i_opaccity)
+        self.opaccity: float = (
+            float(self.i_opaccity) if float(self.i_opaccity) != 0.0 else 1.0)
         self.temperature: float = float(self.i_temperature)
         self.element: str = self.atom_name.element_name()
 
