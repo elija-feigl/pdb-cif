@@ -10,8 +10,11 @@ from core.structure import Structure
 
 
 __authors__ = "[Elija Feigl]"
-__credits__ = "pdbCorrection.py: Thomas Martin, Ana Casanal, Elija Feigl"
-__version__ = "0.6"
+__credits__ = "hybrid36: Ralf W. Grosse-Kunstleve"
+__version__ = "0.7"
+__license__ = "GPL-3.0"
+__status__ = "Development"
+__descr__ = "namd (enrgMD) PDB to chimera PDB."
 
 
 @attr.s(slots=True)
@@ -23,7 +26,7 @@ class Args(object):
 
 def proc_input() -> Args:
     def get_description() -> str:
-        return "namd (enrgMD) PDB to chimera PDB."
+        return __descr__
 
     def add_arguments(p: argparse.ArgumentParser) -> None:
         p.add_argument("-i", "--input",
