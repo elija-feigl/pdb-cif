@@ -20,7 +20,6 @@ __descr__ = "namd (enrgMD) PDB to chimera PDB."
 @attr.s(slots=True)
 class Args(object):
     input: Path = attr.ib()
-    output: Path = attr.ib()
     remove_H: bool = attr.ib()
 
 
@@ -29,21 +28,15 @@ def proc_input() -> Args:
         return __descr__
 
     def add_arguments(p: argparse.ArgumentParser) -> None:
-        p.add_argument("-i", "--input",
+        p.add_argument(dest="input",
                        help="input file",
                        type=str,
-                       required=True,
-                       default=argparse.SUPPRESS,
-                       )
-        p.add_argument("-o", "--output",
-                       help="output file",
-                       type=str,
-                       required=True,
                        default=argparse.SUPPRESS,
                        )
         p.add_argument("-H", "--hydrogen",
+                       dest="hydrogen",
                        help="remove hydrogen atoms?",
-                       action="store_true",
+                       action="store_false",
                        default=True
                        )
 
@@ -54,7 +47,6 @@ def proc_input() -> Args:
     add_arguments(parser)
     parse = parser.parse_args()
     return Args(input=Path(parse.input),
-                output=Path(parse.output),
                 remove_H=parse.hydrogen,
                 )
 
@@ -66,10 +58,12 @@ def main():
     if structure.filename.suffix == ".pdb":
         structure.parse_pdb()
         # TODO: -low- ask for additional info (name, author, etc)
-        structure.write_cif(args.output)
+        output_name = args.input.with_suffix(".cif")
+        structure.write_cif(output_name)
     elif structure.filename.suffix == ".cif":
         structure.parse_pdb()
-        structure.write_pdb(args.output)
+        output_name = args.input.with_suffix(".pdb")
+        structure.write_pdb(output_name)
     else:
         raise IOError
 
