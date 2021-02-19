@@ -5,26 +5,31 @@
 
 STATUS: development
 
-currently supported conversion:
-PDB (namd) -> mmCIF (rcsb, chimera(X))  
+currently supported conversions:
+PDB (namd) -> mmCIF (rcsb, chimera(X))
+
+planned conversions:
 PDB (namd) -> PDB (coot)
+PDB (oxDNA) -> mmCIF
+mmCIF -> PDB (namd, coot)
+
 
 NOTE: this code is exclusively written for DNA origami nano structures
 
 # Usage
 ```
-python3 PDB2mmCIF.py [-h] -i INPUT -o OUTPUT [-H]
+python3 PDB2mmCIF.py [-h] [-H] INPUT
 ```
+positional arguments:
+  input           input file
+
 optional arguments:
-  -h, --help            show this help message and exit
-  -i INPUT, --input INPUT
-                        input file
-  -o OUTPUT, --output OUTPUT
-                        output file
-  -H, --hydrogen        remove hydrogen atoms? (default: True)
+  -h, --help      show this help message and exit
+  -H, --hydrogen  remove hydrogen atoms? (default: True)
 
 # Requirements
 required PyPI packages:
 ```
 attrs >= 19.3.0 (type hinting)
+numpy >= 1.19.4
 ```
