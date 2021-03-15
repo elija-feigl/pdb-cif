@@ -1,5 +1,10 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) [![Python-version:](https://img.shields.io/badge/python-v3.7-green)]() [PDB mmCIF converter](#pdbmmcifconverter) | [Usage](#usage) | [Requirements](#requirements) | [References](#references) 
 
+
+# NOTE
+further development of this code has been moved to https://github.com/elija-feigl/dnaFit
+this repository might not be updated in the future
+
 # PDB mmCIF converter
 [PDB_CIF](https://github.com/elija-feigl/pdb-cif) namd (enrgMD) PDB to chimera PDB converter for DNA origami nano structures.
 
